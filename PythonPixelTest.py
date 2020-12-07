@@ -1,18 +1,14 @@
 
 import sys
-from math import cos
-import numpy
+import numpy as np
 import cv2
 
 
-def makeHologram(original,scale=0.5,scaleR=4,distance=0):
-    '''
-        Create 3D hologram from image (must have equal dimensions)
-    '''
-    
+def makeHologram(original,scale=1,scaleR=4,distance=0):
+
     height = int((scale*original.shape[0]))
     width = int((scale*original.shape[1]))
-    
+
     image = cv2.resize(original, (width, height), interpolation = cv2.INTER_CUBIC)
     
     up = image.copy()
@@ -21,32 +17,33 @@ def makeHologram(original,scale=0.5,scaleR=4,distance=0):
     left = rotate_bound(image.copy(), 270)
     
     hologram = np.zeros([max(image.shape)*scaleR+distance,max(image.shape)*scaleR+distance,3], image.dtype)
+
+    center_x = (int)(hologram.shape[0])/2
+    center_y = (int)(hologram.shape[1])/2
+
+    vert_y = (int)(up.shape[0])/2
+    vert_x = (int)(up.shape[1])/2
+    hologram[0:(int)(up.shape[0]), (int)(center_x-vert_x+distance):(int)(center_x+vert_x+distance)] = up
+    hologram[(int)(hologram.shape[0]-down.shape[0]):(int)(hologram.shape[0]) , (int)(center_x-vert_x+distance):(int)(center_x+vert_x+distance)] = down
     
-    center_x = (hologram.shape[0])/2
-    center_y = (hologram.shape[1])/2
-    
-    vert_x = (up.shape[0])/2
-    vert_y = (up.shape[1])/2
-    hologram[0:up.shape[0], center_x-vert_x+distance:center_x+vert_x+distance] = up
-    hologram[ hologram.shape[1]-down.shape[1]:hologram.shape[1] , center_x-vert_x+distance:center_x+vert_x+distance] = down
-    hori_x = (right.shape[0])/2
-    hori_y = (right.shape[1])/2
-    hologram[ center_x-hori_x : center_x-hori_x+right.shape[0] , hologram.shape[1]-right.shape[0]+distance : hologram.shape[1]+distance] = right
-    hologram[ center_x-hori_x : center_x-hori_x+left.shape[0] , 0+distance : left.shape[0]+distance ] = left
+    hori_y = (int)(right.shape[0])/2
+    hori_x = (int)(right.shape[1])/2
+    hologram[ (int)(center_x-hori_x) : (int)(center_x-hori_x+right.shape[0]) , (int)(hologram.shape[1]-right.shape[1]+distance) : (int)(hologram.shape[1]+distance)] = right
+    hologram[ (int)(center_x-hori_x) : (int)(center_x-hori_x+left.shape[0]) , (int)(0+distance) : (int)(left.shape[1]+distance) ] = left
     
     #cv2.imshow("up",up)
     #cv2.imshow("down",down)
     #cv2.imshow("left",left)
     #cv2.imshow("right",right)
-    #cv2.imshow("hologram",hologram)
-    #cv2.waitKey()
+    cv2.imshow("hologram",hologram)
+    cv2.waitKey()
     return hologram
 
 def process_video(video):
     cap = cv2.VideoCapture(video)
 
     # Define the codec and create VideoWriter object
-    fourcc = cv2.cv.CV_FOURCC(*'XVID')
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
     holo = None
     ret = False
     while(not ret):
@@ -101,12 +98,12 @@ def rotate_bound(image, angle):
     
 if __name__ == '__main__' :
     if (len(sys.argv) == 2) :
-        try :
-            orig = cv2.imread(sys.argv[1])
-            holo = makeHologram(orig,scale=1.0)
-            process_video("/home/evan/Videos/test.avi")
+        #try :
+        orig = cv2.imread(sys.argv[1])
+        holo = makeHologram(orig)
+            #process_video("/home/evan/Videos/test.avi")
             #cv2.imwrite("hologram.png",holo)
-        except ValueError:
-            exit(84)
+#        except ValueError:
+#            exit(84)
         exit(0)
     exit(84)
