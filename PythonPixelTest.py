@@ -4,10 +4,21 @@ import numpy as np
 import cv2
 
 
-def makeHologram(original,scale=1,scaleR=4,distance=0):
+def makeHologram(original, finalsize, innersquare, distance=0):
+    side = min(finalsize)
+    print(side)
+    #scale = ()
+    scale = 1
+    scaleR = 4
+    print(original.shape[0])
+    print(original.shape[1])
 
-    height = int((scale*original.shape[0]))
-    width = int((scale*original.shape[1]))
+    #width = int((scale*original.shape[1]))
+    width = int(side / (1.0 + 2.0 * (float)(original.shape[0]) / original.shape[1]))
+    print(width)
+    #height = int((scale*original.shape[0]))
+    height = int(side / (2.0 + (float)(original.shape[1]) / original.shape[0]))
+    print(height)
 
     image = cv2.resize(original, (width, height), interpolation = cv2.INTER_CUBIC)
     
@@ -16,21 +27,26 @@ def makeHologram(original,scale=1,scaleR=4,distance=0):
     right = rotate_bound(image.copy(), 90)
     left = rotate_bound(image.copy(), 270)
     
-    hologram = np.zeros([max(image.shape)*scaleR+distance,max(image.shape)*scaleR+distance,3], image.dtype)
+    hologram = np.zeros([side, side, 3], image.dtype)
 
-    center_x = (int)(hologram.shape[0])/2
-    center_y = (int)(hologram.shape[1])/2
+    #center_x = (int)(hologram.shape[0])/2
+    #center_y = (int)(hologram.shape[1])/2
 
-    vert_y = (int)(up.shape[0])/2
-    vert_x = (int)(up.shape[1])/2
-    hologram[0:(int)(up.shape[0]), (int)(center_x-vert_x+distance):(int)(center_x+vert_x+distance)] = up
-    hologram[(int)(hologram.shape[0]-down.shape[0]):(int)(hologram.shape[0]) , (int)(center_x-vert_x+distance):(int)(center_x+vert_x+distance)] = down
+    #vert_y = (int)(up.shape[0])/2
+    #vert_x = (int)(up.shape[1])/2
+    #hologram[0:(int)(up.shape[0]), (int)(center_x-vert_x+distance):(int)(center_x+vert_x+distance)] = up
+    #hologram[(int)(hologram.shape[0]-down.shape[0]):(int)(hologram.shape[0]) , (int)(center_x-vert_x+distance):(int)(center_x+vert_x+distance)] = down
+    hologram[0:height, height:width+height] = up
+    hologram[side - height:side, side - height - width:side - height] = down
     
-    hori_y = (int)(right.shape[0])/2
-    hori_x = (int)(right.shape[1])/2
-    hologram[ (int)(center_x-hori_x) : (int)(center_x-hori_x+right.shape[0]) , (int)(hologram.shape[1]-right.shape[1]+distance) : (int)(hologram.shape[1]+distance)] = right
-    hologram[ (int)(center_x-hori_x) : (int)(center_x-hori_x+left.shape[0]) , (int)(0+distance) : (int)(left.shape[1]+distance) ] = left
-    
+    #hori_y = (int)(right.shape[0])/2
+    #hori_x = (int)(right.shape[1])/2
+    #hologram[ (int)(center_x-hori_x) : (int)(center_x-hori_x+right.shape[0]) , (int)(hologram.shape[1]-right.shape[1]+distance) : (int)(hologram.shape[1]+distance)] = right
+    #hologram[ (int)(center_x-hori_x) : (int)(center_x-hori_x+left.shape[0]) , (int)(0+distance) : (int)(left.shape[1]+distance) ] = left
+    hologram[height:height + width, side - height:side] = right
+    hologram[side - height - width:side - height, 0:height] = left
+
+
     #cv2.imshow("up",up)
     #cv2.imshow("down",down)
     #cv2.imshow("left",left)
@@ -100,7 +116,7 @@ if __name__ == '__main__' :
     if (len(sys.argv) == 2) :
         #try :
         orig = cv2.imread(sys.argv[1])
-        holo = makeHologram(orig)
+        holo = makeHologram(orig, (1920, 500), 100)
             #process_video("/home/evan/Videos/test.avi")
             #cv2.imwrite("hologram.png",holo)
 #        except ValueError:
