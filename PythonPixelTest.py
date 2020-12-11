@@ -13,8 +13,8 @@ def makeHologram(original, finalsize, innersquare, distance=0):
     #scale = ()
     scale = 1
     scaleR = 4
-    print(original.shape[0])
-    print(original.shape[1])
+    #print(original.shape[0])
+    #print(original.shape[1])
 
     #width = int((scale*original.shape[1]))
     width = int(side / (1.0 + 2.0 * (float)(original.shape[0]) / original.shape[1]))
@@ -69,19 +69,21 @@ def makeHologram(original, finalsize, innersquare, distance=0):
     #cv2.imshow("hologram",hologram)
     return hologram
 
-def process_video(video):
+def process_video(video, finalsize):
     cap = cv2.VideoCapture(video)
 
     # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    #fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     holo = None
     ret = False
     while(not ret):
         ret, frame = cap.read()
         if ret:
             #frame = cv2.resize(frame, (640, 640), interpolation = cv2.INTER_CUBIC)
-            holo = makeHologram(frame, (640, 640), 0)
-    out = cv2.VideoWriter('hologram.avi',fourcc, 30.0, (holo.shape[0],holo.shape[1]))
+            holo = makeHologram(frame, finalsize, 0)
+    #out = cv2.VideoWriter('hologram.avi',fourcc, 30.0, (holo.shape[0],holo.shape[1]))
+    out = cv2.VideoWriter('hologram.mp4',fourcc, 30.0, (holo.shape[0],holo.shape[1]))
     total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     count = 0
     print ("Processing %d frames"%(total_frames))
@@ -90,7 +92,7 @@ def process_video(video):
         ret, frame = cap.read()
         if ret:
             #frame = cv2.resize(frame, (640, 640), interpolation = cv2.INTER_CUBIC)
-            holo = makeHologram(frame, (640, 640), 0)
+            holo = makeHologram(frame, finalsize, 0)
             out.write(holo)
             count += 1
             print ("Total:%d of %d"%(count,total_frames))
@@ -131,7 +133,7 @@ if __name__ == '__main__' :
         #try :
         orig = cv2.imread(sys.argv[1])
         holo = makeHologram(orig, (1920, 720), 400)
-        process_video("C:/Users/arthu/Pictures/clip_snowball.mp4")
+        process_video("C:/Users/arthu/Pictures/clip_snowball.mp4", (1920, 720))
             #cv2.imwrite("hologram.png",holo)
 #        except ValueError:
 #            exit(84)
